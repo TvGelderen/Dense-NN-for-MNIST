@@ -51,8 +51,8 @@ if __name__ == '__main__':
         print("Epoch {}/{}:".format(epoch+1,epochs))
         
         # Iterate through all training images
-        for trainIndex in range(1):
-            sys.stdout.write("\rTraining {}/60000\n".format(trainIndex+1))
+        for trainIndex in range(60000):
+            sys.stdout.write("\rTraining {}/60000".format(trainIndex+1))
             # FORWARDPROPAGATION
             # Add the input
             for i in range(n_in):
@@ -90,9 +90,43 @@ if __name__ == '__main__':
             for l in range(len(biases)):
                 biases[l] -= errors[l]
             
-                        
+            # Update the weights
+            # NOTE: generally the weights are indicated with the receiving neuron (in this case j) first, though I chose to define the 
+            #       matrices like this for the matrix multiplications
+            # NOTE: since the matrices activations and errors have different dimensions the layer l refers to different parts of the network
+            #       (e.g. errors[0] refers to the errors in h1, whereas actiations[0] refers to the activations in the input layer)
+            for l in range(len(weights)):
+                for k in range(len(weights[l])):
+                    for j in range(len(weights[l][k])):
+                        weights[l][k][j] -= (activations[l][k] * errors[l][j])
             
             sys.stdout.flush()
+    
+    # TESTING
+    correct = 0
+    for testIndex in range(10000):
+        sys.stdout.write("\rTesting {}/10000".format(testIndex+1))
+        # Add the input
+        for i in range(n_in):
+            activations[0][i] = trainX[trainIndex][i]
+        # Calculate the activations through the layers
+        for l in range(len(activations)-1):
+            # To calculate the activations of the neurons in layer l+1 we take the following dot product and add the respective bias
+            activations[l+1] = activations[l].dot(weights[l]) + biases[l]
+            # Apply the sigmoid to get the final activation
+            for i in range(len(activations[l+1])):
+                activations[l+1][i] = sigmoid(activations[l+1][i])
+        
+        guess = np.argmax(activations[3])
+        
+        if guess == testY[testIndex]:
+            correct += 1
+        
+        sys.stdout.flush()
+        
+    accuracy = correct/10000
+    print("Accuracy: {}".format(accuracy))
+        
     
     # Save the weights to files
     np.save('weights\weightslayer1.npy', weights[0])
