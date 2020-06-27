@@ -5,7 +5,11 @@ import sys
 
 # Sigmoid activation function
 def sigmoid(x):
-    return 1 / (1 + exp(-x))
+    return (1 / (1 + exp(-x)))
+
+# Derivative of the sigmoid
+def derivSigmoid(arr):
+    return (arr * (1.0 - arr))
 
 if __name__ == '__main__':
     (trainX, trainY), (testX, testY) = mnist.load_data()
@@ -13,18 +17,20 @@ if __name__ == '__main__':
     
     # Input layer consists of 784 neurons, one for each item in the matrices
     n_in = 784
-    #the two hidden layers both contain 16 neurons
+    # The two hidden layers both contain 16 neurons
     n_h1 = 16
     n_h2 = 16
     # The output layer contains 10 neurons, one for each possible number
     n_out = 10
     
-    # Initialize weights
-    weights = [np.random.rand(n_h1,n_in), np.random.rand(n_h2,n_h1), np.random.rand(n_out,n_h2)]
-    # Initialize activation values
+    # Initialize weights from a uniform distribution between 0.0 and 0.5
+    weights = [np.random.uniform(0.0, 0.5, (n_in,n_h1)), np.random.uniform(0.0, 0.5, (n_h1,n_h2)), np.random.uniform(0.0, 0.5, (n_h2,n_out))]
+    # Initialize the matrix for the activation values
     activations = [np.zeros(n_in), np.zeros(n_h1), np.zeros(n_h2), np.zeros(n_out)]
-    # Initialize biases
+    # Initialize biases from a uniform distribution between 0.0 an 1.0
     biases = [np.random.rand(n_h1), np.random.rand(n_h2), np.random.rand(n_out)]
+    # Initalize the error matrix
+    errors = [np.zeros(n_in), np.zeros(n_h1), np.zeros(n_h2), np.zeros(n_out)]
     
     # Change the type to float so as to make sure we get decimal values when normalizing
     trainX = trainX.astype('float32')
@@ -32,7 +38,7 @@ if __name__ == '__main__':
     # Normalizing by dividing by the max RGB value
     trainX /= 255
     testX /= 255
-    # Transpose the arrays so they are easy to put into the input nodes
+    # Transpose the arrays so they can be input to the input nodes
     trainX = trainX.transpose(0,2,1).reshape(-1,784)
     testX = testX.transpose(0,2,1).reshape(-1,784)
     
@@ -46,25 +52,40 @@ if __name__ == '__main__':
         
         # Iterate through all training images
         for trainIndex in range(1):
-            sys.stdout.write("\rTraining {}/60000".format(trainIndex+1))
-            # Add the input
+            sys.stdout.write("\rTraining {}/60000\n".format(trainIndex+1))
+            # Add the inputww
             for i in range(n_in):
                 activations[0][i] = trainX[trainIndex][i]
             # Calculate the activations through the layers
-            for i in range(3):
-                for j in range(len(activations[i+1])):
-                    # Reset the activation sum
-                    activation = 0
-                    # Sum the activations of the neurons from the previous layers times the weights of the connections
-                    for k in range(len(activations[i])):
-                        # It is more common to refer to the weights between layer i and i+1 as weights i+1, but due to the way the matrix is costructed these will be referred to as weights i
-                        activation += weights[i][j][k] * activations[i][k]
-                    # Add the bias
-                    activation += biases[i][j]
-                    # Apply the sigmoid function to get the activation
-                    activations[i+1][j] = sigmoid(activation)
+            for l in range(3):
+                # To calculate the activations of the neurons in layer l+1 we take the following dot product and add the respective bias
+                activations[l+1] = activations[l].dot(weights[l]) + biases[l]
+                # Apply the sigmoid to get the final activation
+                for i in range(len(activations[l+1])):
+                    #print("z: {} \t\t a: {}".format(activations[l+1][i], sigmoid(activations[l+1][i])))
+                    activations[l+1][i] = sigmoid(activations[l+1][i])
                     
-                
+            # Create an expected output vector
+            y = np.zeros(n_out)
+            for i in range(n_out):
+                if i == trainY[trainIndex]:
+                    y[i] = 1.0
+                else:
+                    y[i] = 0.0
+            
+            # Calculate the cost
+            a = y-activations[3]
+            cost = a.dot(a)/2
+            
+            # Calculate the error in the output layer
+            errors[3] = np.multiply((activations[3] - y), derivSigmoid(activations[3]))
+            
+            # Propagate the error backwards
+            for l in range(3):
+                errors[2-l] = np.multiply((weights[2-l].dot(errors[3-l])), derivSigmoid(activations[2-l]))
+                    
+            # Backpropagate trough the networkq
+            
             
             sys.stdout.flush()
     
