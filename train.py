@@ -30,7 +30,7 @@ if __name__ == '__main__':
     # Initialize biases from a uniform distribution between 0.0 an 1.0
     biases = [np.random.rand(n_h1), np.random.rand(n_h2), np.random.rand(n_out)]
     # Initalize the error matrix
-    errors = [np.zeros(n_in), np.zeros(n_h1), np.zeros(n_h2), np.zeros(n_out)]
+    errors = [np.zeros(n_h1), np.zeros(n_h2), np.zeros(n_out)]
     
     # Change the type to float so as to make sure we get decimal values when normalizing
     trainX = trainX.astype('float32')
@@ -53,11 +53,12 @@ if __name__ == '__main__':
         # Iterate through all training images
         for trainIndex in range(1):
             sys.stdout.write("\rTraining {}/60000\n".format(trainIndex+1))
-            # Add the inputww
+            # FORWARDPROPAGATION
+            # Add the input
             for i in range(n_in):
                 activations[0][i] = trainX[trainIndex][i]
             # Calculate the activations through the layers
-            for l in range(3):
+            for l in range(len(activations)-1):
                 # To calculate the activations of the neurons in layer l+1 we take the following dot product and add the respective bias
                 activations[l+1] = activations[l].dot(weights[l]) + biases[l]
                 # Apply the sigmoid to get the final activation
@@ -73,19 +74,23 @@ if __name__ == '__main__':
                 else:
                     y[i] = 0.0
             
+            # BACKPROPAGATION
             # Calculate the cost
             a = y-activations[3]
             cost = a.dot(a)/2
             
             # Calculate the error in the output layer
-            errors[3] = np.multiply((activations[3] - y), derivSigmoid(activations[3]))
+            errors[2] = np.multiply((activations[3] - y), derivSigmoid(activations[3]))
             
             # Propagate the error backwards
-            for l in range(3):
-                errors[2-l] = np.multiply((weights[2-l].dot(errors[3-l])), derivSigmoid(activations[2-l]))
+            errors[1] = np.multiply((weights[2].dot(errors[2])), derivSigmoid(activations[2]))
+            errors[0] = np.multiply((weights[1].dot(errors[1])), derivSigmoid(activations[1]))
                     
-            # Backpropagate trough the networkq
+            # Update the biases
+            for l in range(len(biases)):
+                biases[l] -= errors[l]
             
+                        
             
             sys.stdout.flush()
     
