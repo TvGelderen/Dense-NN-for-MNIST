@@ -43,8 +43,9 @@ if __name__ == '__main__':
     testX = testX.transpose(0,2,1).reshape(-1,784)
     
     # Determine number of epochs
-    epochs = 1
+    epochs = 10
     #epochs = input("Please enter number of epochs: ")
+    learningRate = 0.1
         
     # Iterate through the epochs
     for epoch in range(epochs):
@@ -98,9 +99,11 @@ if __name__ == '__main__':
             for l in range(len(weights)):
                 for k in range(len(weights[l])):
                     for j in range(len(weights[l][k])):
-                        weights[l][k][j] -= (activations[l][k] * errors[l][j])
+                        weights[l][k][j] -= (activations[l][k] * learningRate * errors[l][j])
             
             sys.stdout.flush()
+    
+    print()
     
     # TESTING
     correct = 0
