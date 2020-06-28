@@ -9,10 +9,7 @@ def sigmoid(x):
 
 # Derivative of the sigmoid
 def derivSigmoid(arr):
-    for i in range(len(arr)):
-        arr[i] *= (1.0 - arr[i])
-        
-    return arr
+    return arr * (1.0 - arr)
 
 if __name__ == '__main__':
     (trainX, trainY), (testX, testY) = mnist.load_data()
@@ -27,7 +24,7 @@ if __name__ == '__main__':
     n_out = 10
     
     # Randomize the seed
-    np.random.seed()
+    np.random.seed(seed=None)
     # Initialize weights from a uniform distribution between 0.0 and 0.5
     weights = [np.random.uniform(0.0, 0.5, (n_in,n_h1)), np.random.uniform(0.0, 0.5, (n_h1,n_h2)), np.random.uniform(0.0, 0.5, (n_h2,n_out))]
     # Initialize the matrix for the activation values
@@ -44,8 +41,8 @@ if __name__ == '__main__':
     trainX /= 255
     testX /= 255
     # Transpose the arrays so they can be input to the input nodes
-    trainX = trainX.transpose(0,2,1).reshape(-1,784)
-    testX = testX.transpose(0,2,1).reshape(-1,784)
+    trainX = trainX.transpose(0,1,2).reshape(-1,784)
+    testX = testX.transpose(0,1,2).reshape(-1,784)
     
     # Determine number of epochs
     epochs = 1
@@ -80,26 +77,31 @@ if __name__ == '__main__':
                 else:
                     y[i] = 0.0
             
-            # BACKPROPAGATION            
-            # Calculate the error in the output layer
-            delta[2] = np.multiply((activations[3] - y), derivSigmoid(activations[3]))
-            # Propagate the error backwards
-            delta[1] = np.multiply((weights[2].dot(delta[2])), derivSigmoid(activations[2]))
-            delta[0] = np.multiply((weights[1].dot(delta[1])), derivSigmoid(activations[1]))
-                    
-            # Update the biases
-            for l in range(len(biases)):
-                biases[l] -= delta[l]
-            
-            # Update the weights
+            # BACKPROPAGATION      
             # NOTE: generally the weights are indicated with the receiving neuron (in this case j) first, though in this case the matrices 
             #       are defined like this for the matrix multiplications
-            # NOTE: since the matrices activations and errors have different dimensions the layer l refers to different parts of the network
-            #       (e.g. errors[0] refers to the errors in h1, whereas actiations[0] refers to the activations in the input layer)
-            for l in range(len(weights)):
+            # NOTE: since the matrices have different dimensions the layer l refers to different parts of the network in different matrices
+            #       (e.g. delta[0] refers to the errors in h1, whereas actiations[0] refers to the activations in the input layer)
+            
+            # Calculate the error in the output layer
+            delta[2] = ((activations[3] - y)/2) * derivSigmoid(activations[3])
+            # Propagate the error backwards
+            #delta[1] = np.multiply((weights[1].dot(delta[1])), derivSigmoid(activations[2]))
+            #delta[0] = np.multiply((weights[0].dot(delta[0])), derivSigmoid(activations[1]))
+            for l in reversed(range(2)):
+                for k in range(len(weights[l+1])):
+                    errorSum = 0
+                    for j in range(len(weights[l+1][k])):
+                        errorSum += weights[l+1][k][j] * delta[l+1][j] 
+                    delta[l][k] = errorSum * derivSigmoid(activations[l+1][k])
+                
+            
+            # Update the weights and biases
+            for l in reversed(range(len(weights))):
+                biases[l] -= delta[l]
                 for k in range(len(weights[l])):
                     for j in range(len(weights[l][k])):
-                        weights[l][k][j] -= (learningRate * activations[l][k] * delta[l][j])
+                        weights[l][k][j] += (learningRate * activations[l][k] * delta[l][j])
             
             sys.stdout.flush()
     
