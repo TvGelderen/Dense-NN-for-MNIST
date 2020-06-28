@@ -9,7 +9,10 @@ def sigmoid(x):
 
 # Derivative of the sigmoid
 def derivSigmoid(arr):
-    return (arr * (1.0 - arr))
+    for i in range(len(arr)):
+        arr[i] *= (1.0 - arr[i])
+        
+    return arr
 
 if __name__ == '__main__':
     (trainX, trainY), (testX, testY) = mnist.load_data()
@@ -23,14 +26,16 @@ if __name__ == '__main__':
     # The output layer contains 10 neurons, one for each possible number
     n_out = 10
     
+    # Randomize the seed
+    np.random.seed()
     # Initialize weights from a uniform distribution between 0.0 and 0.5
     weights = [np.random.uniform(0.0, 0.5, (n_in,n_h1)), np.random.uniform(0.0, 0.5, (n_h1,n_h2)), np.random.uniform(0.0, 0.5, (n_h2,n_out))]
     # Initialize the matrix for the activation values
     activations = [np.zeros(n_in), np.zeros(n_h1), np.zeros(n_h2), np.zeros(n_out)]
     # Initialize biases from a uniform distribution between 0.0 an 1.0
     biases = [np.random.rand(n_h1), np.random.rand(n_h2), np.random.rand(n_out)]
-    # Initalize the error matrix
-    errors = [np.zeros(n_h1), np.zeros(n_h2), np.zeros(n_out)]
+    # Initalize the error matrix, called delta
+    delta = [np.zeros(n_h1), np.zeros(n_h2), np.zeros(n_out)]
     
     # Change the type to float so as to make sure we get decimal values when normalizing
     trainX = trainX.astype('float32')
@@ -43,7 +48,7 @@ if __name__ == '__main__':
     testX = testX.transpose(0,2,1).reshape(-1,784)
     
     # Determine number of epochs
-    epochs = 10
+    epochs = 1
     #epochs = input("Please enter number of epochs: ")
     learningRate = 0.1
         
@@ -52,7 +57,7 @@ if __name__ == '__main__':
         print("Epoch {}/{}:".format(epoch+1,epochs))
         
         # Iterate through all training images
-        for trainIndex in range(60000):
+        for trainIndex in range(10000):
             sys.stdout.write("\rTraining {}/60000".format(trainIndex+1))
             # FORWARDPROPAGATION
             # Add the input
@@ -75,31 +80,26 @@ if __name__ == '__main__':
                 else:
                     y[i] = 0.0
             
-            # BACKPROPAGATION
-            # Calculate the cost
-            a = y-activations[3]
-            cost = a.dot(a)/2
-            
+            # BACKPROPAGATION            
             # Calculate the error in the output layer
-            errors[2] = np.multiply((activations[3] - y), derivSigmoid(activations[3]))
-            
+            delta[2] = np.multiply((activations[3] - y), derivSigmoid(activations[3]))
             # Propagate the error backwards
-            errors[1] = np.multiply((weights[2].dot(errors[2])), derivSigmoid(activations[2]))
-            errors[0] = np.multiply((weights[1].dot(errors[1])), derivSigmoid(activations[1]))
+            delta[1] = np.multiply((weights[2].dot(delta[2])), derivSigmoid(activations[2]))
+            delta[0] = np.multiply((weights[1].dot(delta[1])), derivSigmoid(activations[1]))
                     
             # Update the biases
             for l in range(len(biases)):
-                biases[l] -= errors[l]
+                biases[l] -= delta[l]
             
             # Update the weights
-            # NOTE: generally the weights are indicated with the receiving neuron (in this case j) first, though I chose to define the 
-            #       matrices like this for the matrix multiplications
+            # NOTE: generally the weights are indicated with the receiving neuron (in this case j) first, though in this case the matrices 
+            #       are defined like this for the matrix multiplications
             # NOTE: since the matrices activations and errors have different dimensions the layer l refers to different parts of the network
             #       (e.g. errors[0] refers to the errors in h1, whereas actiations[0] refers to the activations in the input layer)
             for l in range(len(weights)):
                 for k in range(len(weights[l])):
                     for j in range(len(weights[l][k])):
-                        weights[l][k][j] -= (activations[l][k] * learningRate * errors[l][j])
+                        weights[l][k][j] -= (learningRate * activations[l][k] * delta[l][j])
             
             sys.stdout.flush()
     
@@ -111,7 +111,7 @@ if __name__ == '__main__':
         sys.stdout.write("\rTesting {}/10000".format(testIndex+1))
         # Add the input
         for i in range(n_in):
-            activations[0][i] = trainX[trainIndex][i]
+            activations[0][i] = testX[testIndex][i]
         # Calculate the activations through the layers
         for l in range(len(activations)-1):
             # To calculate the activations of the neurons in layer l+1 we take the following dot product and add the respective bias
@@ -128,7 +128,7 @@ if __name__ == '__main__':
         sys.stdout.flush()
         
     accuracy = correct/10000
-    print("Accuracy: {}".format(accuracy))
+    print("\nAccuracy: {}".format(accuracy))
         
     
     # Save the weights to files
