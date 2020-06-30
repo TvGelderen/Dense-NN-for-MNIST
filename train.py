@@ -20,7 +20,7 @@ def derivative_sigmoid(arr):
 
 
 if __name__ == '__main__':
-    (trainX, trainY), (testX, testY) = mnist.load_data()
+    (train_x, train_y), (test_x, testY) = mnist.load_data()
     # X contains the images, Y contains the corresponding number
 
     # Input layer consists of 784 neurons, one for each item in the matrices
@@ -44,33 +44,30 @@ if __name__ == '__main__':
     delta = [np.zeros(n_h1), np.zeros(n_h2), np.zeros(n_out)]
 
     # Change the type to float so as to make sure we get decimal values when normalizing
-    trainX = trainX.astype('float32')
-    testX = testX.astype('float32')
+    train_x = train_x.astype('float32')
+    test_x = test_x.astype('float32')
     # Normalizing by dividing by the max RGB value
-    trainX /= 255
-    testX /= 255
+    train_x /= 255
+    test_x /= 255
     # Transpose the arrays so they can be input to the input nodes
-    trainX = trainX.transpose(0, 1, 2).reshape(-1, 784)
-    testX = testX.transpose(0, 1, 2).reshape(-1, 784)
+    train_x = train_x.transpose(0, 1, 2).reshape(-1, 784)
+    test_x = test_x.transpose(0, 1, 2).reshape(-1, 784)
 
     # Determine number of epochs
     epochs = int(input("Number of epochs: "))
-    learningRate = float(input("Learning rate: "))
-
-    # Initialize a function with the cost over time
-    cost = np.empty((epochs,60000))
+    learning_rate = float(input("Learning rate: "))
 
     # Iterate through the epochs
     for epoch in range(epochs):
         print("Epoch {}/{}:".format(epoch + 1, epochs))
-
+        cost = np.zeros(60000)
         # Iterate through all training images
-        for trainIndex in range(60000):
-            sys.stdout.write("\rTraining {}/60000".format(trainIndex + 1))
+        for train_index in range(60000):
+            sys.stdout.write("\rTraining {}/60000".format(train_index + 1))
             # FORWARD PROPAGATION
             # Add the input
             for i in range(n_in):
-                activations[0][i] = trainX[trainIndex][i]
+                activations[0][i] = train_x[train_index][i]
             # Calculate the activations through the layers
             for l in range(len(activations) - 1):
                 # To calculate the activations of the neurons in layer l+1 we take the following dot product and add the
@@ -83,23 +80,16 @@ if __name__ == '__main__':
             # Create an expected output vector
             y = np.zeros(n_out)
             for i in range(n_out):
-                if i == trainY[trainIndex]:
+                if i == train_y[train_index]:
                     y[i] = 1.0
                 else:
                     y[i] = 0.0
-
-            # Calculate the cost every ten iterations
-            if trainIndex % 10 == 0:
-                costSum = 0
-                for i in range(n_out):
-                    costSum += (y[i] - activations[3][i]) ** 2
-                cost[epoch][trainIndex] = costSum / 2
 
             # BACK PROPAGATION
             # NOTE: generally the weights are indicated with the receiving neuron (in this case j) first, though in this
             #       case the matrices are defined like this for the matrix multiplications
             # NOTE: since the matrices have different dimensions the layer l refers to different parts of the network in
-            #       different matrices (e.g. delta[0] refers to the errors in h1, whereas actiations[0] refers to the
+            #       different matrices (e.g. delta[0] refers to the errors in h1, whereas activations[0] refers to the
             #       activations in the input layer)
 
             # Calculate the error in the output layer
@@ -118,9 +108,13 @@ if __name__ == '__main__':
                 for k in range(len(weights[l])):
                     for j in range(len(weights[l][k])):
                         # As noted before, the index l represents a different layer in each of the matrices
-                        weights[l][k][j] -= learningRate * activations[l][k] * delta[l][j]
+                        weights[l][k][j] -= learning_rate * activations[l][k] * delta[l][j]
 
             sys.stdout.flush()
+
+        plt.plot(cost)
+        plt.ylabel("Cost")
+        plt.show()
         print("\n")
 
     # TESTING
@@ -129,7 +123,7 @@ if __name__ == '__main__':
         sys.stdout.write("\rTesting {}/10000".format(testIndex + 1))
         # Add the input
         for i in range(n_in):
-            activations[0][i] = testX[testIndex][i]
+            activations[0][i] = test_x[testIndex][i]
         # Calculate the activations through the layers
         for l in range(len(activations) - 1):
             # To calculate the activations of the neurons in layer l+1 we take the following dot product and add the
@@ -148,11 +142,6 @@ if __name__ == '__main__':
 
     accuracy = correct / 10000
     print("\nAccuracy: {}".format(accuracy))
-
-    for i in range(epochs):
-        plt.plot(cost[i])
-        plt.ylabel("Cost in epoch {}".format(epoch))
-        plt.show()
 
     # Save the weights to files
     np.save('weights/weights_layer1.npy', weights[0])
