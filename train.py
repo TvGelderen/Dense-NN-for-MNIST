@@ -53,15 +53,15 @@ if __name__ == '__main__':
     testX = testX.transpose(0, 1, 2).reshape(-1, 784)
 
     # Determine number of epochs
-    epochs = input("Number of epochs: ")
-    learningRate = input("Learning rate: ")
+    epochs = int(input("Number of epochs: "))
+    learningRate = float(input("Learning rate: "))
 
     # Iterate through the epochs
     for epoch in range(epochs):
         print("Epoch {}/{}:".format(epoch + 1, epochs))
 
         # Iterate through all training images
-        for trainIndex in range(60000):
+        for trainIndex in range(30000):
             sys.stdout.write("\rTraining {}/60000".format(trainIndex + 1))
             # FORWARD PROPAGATION
             # Add the input
@@ -106,7 +106,7 @@ if __name__ == '__main__':
                 biases[l] -= delta[l]
                 for k in range(len(weights[l])):
                     for j in range(len(weights[l][k])):
-                        weights[l][k][j] -= (learningRate * activations[l][k] * delta[l][j])
+                        weights[l][k][j] -= learningRate * activations[l][k] * delta[l][j]
 
             sys.stdout.flush()
         print("\n")
