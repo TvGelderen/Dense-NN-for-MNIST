@@ -98,10 +98,10 @@ if __name__ == '__main__':
             # Propagate the error backwards
             for l in reversed(range(2)):
                 for k in range(len(weights[l + 1])):
-                    errorSum = 0
+                    error_sum = 0
                     for j in range(len(weights[l + 1][k])):
-                        errorSum += weights[l + 1][k][j] * delta[l + 1][j] * derivative_sigmoid(activations[l + 1][k])
-                    delta[l][k] = errorSum
+                        error_sum += weights[l + 1][k][j] * delta[l + 1][j] * derivative_sigmoid(activations[l + 1][k])
+                    delta[l][k] = error_sum
             # Update the weights and biases
             for l in reversed(range(len(weights))):
                 biases[l] -= delta[l]
@@ -112,9 +112,6 @@ if __name__ == '__main__':
 
             sys.stdout.flush()
 
-        plt.plot(cost)
-        plt.ylabel("Cost")
-        plt.show()
         print("\n")
 
     # TESTING
