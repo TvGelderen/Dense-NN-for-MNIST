@@ -6,7 +6,11 @@ import sys
 
 # Sigmoid activation function
 def sigmoid(x):
-    return 1 / (1 + exp(-x))
+    # In some instances a too high activation can cause an OverflowError
+    try:
+        return 1 / (1 + exp(-x))
+    except OverflowError:
+        return 1
 
 
 # Derivative of the sigmoid
@@ -31,7 +35,6 @@ if __name__ == '__main__':
     # Initialize weights from a uniform distribution between 0.0 and 0.5
     weights = [np.random.uniform(-1, 1, (n_in, n_h1)), np.random.uniform(-1, 1, (n_h1, n_h2)),
                np.random.uniform(-1, 1, (n_h2, n_out))]
-    initialWeights = weights
     # Initialize the matrix for the activation values
     activations = [np.zeros(n_in), np.zeros(n_h1), np.zeros(n_h2), np.zeros(n_out)]
     # Initialize biases from a uniform distribution between 0.0 an 1.0
@@ -52,14 +55,14 @@ if __name__ == '__main__':
     # Determine number of epochs
     epochs = 1
     # epochs = input("Please enter number of epochs: ")
-    learningRate = 1
+    learningRate = 0.1
 
     # Iterate through the epochs
     for epoch in range(epochs):
         print("Epoch {}/{}:".format(epoch + 1, epochs))
 
         # Iterate through all training images
-        for trainIndex in range(10000):
+        for trainIndex in range(60000):
             sys.stdout.write("\rTraining {}/60000".format(trainIndex + 1))
             # FORWARDPROPAGATION
             # Add the input
@@ -99,7 +102,7 @@ if __name__ == '__main__':
                         errorSum += weights[l + 1][k][j] * derivative_sigmoid(activations[l + 2][j]) * delta[l + 1][j]
                     delta[l][k] = errorSum
 
-                    # Update the weights and biases
+            # Update the weights and biases
             for l in reversed(range(len(weights))):
                 biases[l] -= delta[l]
                 for k in range(len(weights[l])):
