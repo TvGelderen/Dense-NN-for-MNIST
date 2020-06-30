@@ -39,7 +39,7 @@ if __name__ == '__main__':
     activations = [np.zeros(n_in), np.zeros(n_h1), np.zeros(n_h2), np.zeros(n_out)]
     # Initialize biases from a uniform distribution between 0.0 an 1.0
     biases = [np.random.rand(n_h1), np.random.rand(n_h2), np.random.rand(n_out)]
-    # Initalize the error matrix, called delta
+    # Initialize the error matrix, called delta
     delta = [np.zeros(n_h1), np.zeros(n_h2), np.zeros(n_out)]
 
     # Change the type to float so as to make sure we get decimal values when normalizing
@@ -53,9 +53,8 @@ if __name__ == '__main__':
     testX = testX.transpose(0, 1, 2).reshape(-1, 784)
 
     # Determine number of epochs
-    epochs = 1
-    # epochs = input("Please enter number of epochs: ")
-    learningRate = 0.1
+    epochs = input("Number of epochs: ")
+    learningRate = input("Learning rate: ")
 
     # Iterate through the epochs
     for epoch in range(epochs):
@@ -64,17 +63,17 @@ if __name__ == '__main__':
         # Iterate through all training images
         for trainIndex in range(60000):
             sys.stdout.write("\rTraining {}/60000".format(trainIndex + 1))
-            # FORWARDPROPAGATION
+            # FORWARD PROPAGATION
             # Add the input
             for i in range(n_in):
                 activations[0][i] = trainX[trainIndex][i]
             # Calculate the activations through the layers
             for l in range(len(activations) - 1):
-                # To calculate the activations of the neurons in layer l+1 we take the following dot product and add the respective bias
+                # To calculate the activations of the neurons in layer l+1 we take the following dot product and add the
+                # respective bias
                 activations[l + 1] = activations[l].dot(weights[l]) + biases[l]
                 # Apply the sigmoid to get the final activation
                 for i in range(len(activations[l + 1])):
-                    # print("z: {} \t\t a: {}".format(activations[l+1][i], sigmoid(activations[l+1][i])))
                     activations[l + 1][i] = sigmoid(activations[l + 1][i])
 
             # Create an expected output vector
@@ -85,11 +84,12 @@ if __name__ == '__main__':
                 else:
                     y[i] = 0.0
 
-            # BACKPROPAGATION
-            # NOTE: generally the weights are indicated with the receiving neuron (in this case j) first, though in this case the matrices
-            #       are defined like this for the matrix multiplications
-            # NOTE: since the matrices have different dimensions the layer l refers to different parts of the network in different matrices
-            #       (e.g. delta[0] refers to the errors in h1, whereas actiations[0] refers to the activations in the input layer)
+            # BACK PROPAGATION
+            # NOTE: generally the weights are indicated with the receiving neuron (in this case j) first, though in this
+            #       case the matrices are defined like this for the matrix multiplications
+            # NOTE: since the matrices have different dimensions the layer l refers to different parts of the network in
+            #       different matrices (e.g. delta[0] refers to the errors in h1, whereas actiations[0] refers to the
+            #       activations in the input layer)
 
             # Calculate the error in the output layer
             for i in range(n_out):
@@ -101,7 +101,6 @@ if __name__ == '__main__':
                     for j in range(len(weights[l + 1][k])):
                         errorSum += weights[l + 1][k][j] * derivative_sigmoid(activations[l + 2][j]) * delta[l + 1][j]
                     delta[l][k] = errorSum
-
             # Update the weights and biases
             for l in reversed(range(len(weights))):
                 biases[l] -= delta[l]
@@ -110,8 +109,7 @@ if __name__ == '__main__':
                         weights[l][k][j] -= (learningRate * activations[l][k] * delta[l][j])
 
             sys.stdout.flush()
-
-    print()
+        print("\n")
 
     # TESTING
     correct = 0
@@ -122,7 +120,8 @@ if __name__ == '__main__':
             activations[0][i] = testX[testIndex][i]
         # Calculate the activations through the layers
         for l in range(len(activations) - 1):
-            # To calculate the activations of the neurons in layer l+1 we take the following dot product and add the respective bias
+            # To calculate the activations of the neurons in layer l+1 we take the following dot product and add the
+            # respective bias
             activations[l + 1] = activations[l].dot(weights[l]) + biases[l]
             # Apply the sigmoid to get the final activation
             for i in range(len(activations[l + 1])):
