@@ -1,5 +1,6 @@
 from tensorflow.python.keras.datasets import mnist
 import numpy as np
+import matplotlib.pyplot as plt
 from math import exp
 import sys
 
@@ -56,6 +57,9 @@ if __name__ == '__main__':
     epochs = int(input("Number of epochs: "))
     learningRate = float(input("Learning rate: "))
 
+    # Initialize a function with the cost over time
+    cost = np.empty((epochs,60000))
+
     # Iterate through the epochs
     for epoch in range(epochs):
         print("Epoch {}/{}:".format(epoch + 1, epochs))
@@ -83,6 +87,13 @@ if __name__ == '__main__':
                     y[i] = 1.0
                 else:
                     y[i] = 0.0
+
+            # Calculate the cost every ten iterations
+            if trainIndex % 10 == 0:
+                costSum = 0
+                for i in range(n_out):
+                    costSum += (y[i] - activations[3][i]) ** 2
+                cost[epoch][trainIndex] = costSum / 2
 
             # BACK PROPAGATION
             # NOTE: generally the weights are indicated with the receiving neuron (in this case j) first, though in this
@@ -137,6 +148,11 @@ if __name__ == '__main__':
 
     accuracy = correct / 10000
     print("\nAccuracy: {}".format(accuracy))
+
+    for i in range(epochs):
+        plt.plot(cost[i])
+        plt.ylabel("Cost in epoch {}".format(epoch))
+        plt.show()
 
     # Save the weights to files
     np.save('weights/weights_layer1.npy', weights[0])
