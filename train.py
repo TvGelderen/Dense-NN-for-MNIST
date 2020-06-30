@@ -61,7 +61,7 @@ if __name__ == '__main__':
         print("Epoch {}/{}:".format(epoch + 1, epochs))
 
         # Iterate through all training images
-        for trainIndex in range(30000):
+        for trainIndex in range(60000):
             sys.stdout.write("\rTraining {}/60000".format(trainIndex + 1))
             # FORWARD PROPAGATION
             # Add the input
@@ -93,19 +93,20 @@ if __name__ == '__main__':
 
             # Calculate the error in the output layer
             for i in range(n_out):
-                delta[2][i] = 2 * (activations[3][i] - y[i]) * derivative_sigmoid(activations[3][i])
+                delta[2][i] = (activations[3][i] - y[i]) * derivative_sigmoid(activations[3][i])
             # Propagate the error backwards
             for l in reversed(range(2)):
                 for k in range(len(weights[l + 1])):
                     errorSum = 0
                     for j in range(len(weights[l + 1][k])):
-                        errorSum += weights[l + 1][k][j] * derivative_sigmoid(activations[l + 2][j]) * delta[l + 1][j]
+                        errorSum += weights[l + 1][k][j] * delta[l + 1][j] * derivative_sigmoid(activations[l + 1][k])
                     delta[l][k] = errorSum
             # Update the weights and biases
             for l in reversed(range(len(weights))):
                 biases[l] -= delta[l]
                 for k in range(len(weights[l])):
                     for j in range(len(weights[l][k])):
+                        # As noted before, the index l represents a different layer in each of the matrices
                         weights[l][k][j] -= learningRate * activations[l][k] * delta[l][j]
 
             sys.stdout.flush()
