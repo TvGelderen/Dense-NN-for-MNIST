@@ -39,7 +39,7 @@ if __name__ == '__main__':
     # Initialize the matrix for the activation values
     activations = [np.zeros(n_in), np.zeros(n_h1), np.zeros(n_h2), np.zeros(n_out)]
     # Initialize biases from a uniform distribution between 0.0 an 1.0
-    biases = [np.random.rand(n_h1), np.random.rand(n_h2), np.random.rand(n_out)]
+    biases = [np.random.uniform(-1, 1, n_h1), np.random.uniform(-1, 1, n_h2), np.random.uniform(-1, 1, n_out)]
     # Initialize the error matrix, called delta
     delta = [np.zeros(n_h1), np.zeros(n_h2), np.zeros(n_out)]
 
