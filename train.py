@@ -33,12 +33,12 @@ if __name__ == '__main__':
 
     # Randomize the seed
     np.random.seed(seed=None)
-    # Initialize weights from a uniform distribution between 0.0 and 0.5
+    # Initialize weights from a uniform distribution between -1.0 and 1.0
     weights = [np.random.uniform(-1, 1, (n_in, n_h1)), np.random.uniform(-1, 1, (n_h1, n_h2)),
                np.random.uniform(-1, 1, (n_h2, n_out))]
     # Initialize the matrix for the activation values
     activations = [np.zeros(n_in), np.zeros(n_h1), np.zeros(n_h2), np.zeros(n_out)]
-    # Initialize biases from a uniform distribution between 0.0 an 1.0
+    # Initialize biases from a uniform distribution between -1.0 an 1.0
     biases = [np.random.uniform(-1, 1, n_h1), np.random.uniform(-1, 1, n_h2), np.random.uniform(-1, 1, n_out)]
     # Initialize the error matrix, called delta
     delta = [np.zeros(n_h1), np.zeros(n_h2), np.zeros(n_out)]
@@ -54,20 +54,21 @@ if __name__ == '__main__':
     test_x = test_x.transpose(0, 1, 2).reshape(-1, 784)
 
     # Determine number of epochs
-    epochs = int(input("Number of epochs: "))
-    learning_rate = float(input("Learning rate: "))
+    epochs = 1
+    # int(input("Number of epochs: "))
+    learning_rate = 0.1
+    # float(input("Learning rate: "))
+    cost = 0.0
 
     # Iterate through the epochs
     for epoch in range(epochs):
         print("Epoch {}/{}:".format(epoch + 1, epochs))
-        cost = np.zeros(60000)
         # Iterate through all training images
-        for train_index in range(60000):
-            sys.stdout.write("\rTraining {}/60000".format(train_index + 1))
+        for train_index in range(6000):
+            sys.stdout.write("\rTraining {}/60000\t Cost: {:.5f}".format(train_index + 1, cost))
             # FORWARD PROPAGATION
             # Add the input
-            for i in range(n_in):
-                activations[0][i] = train_x[train_index][i]
+            activations[0] = train_x[train_index]
             # Calculate the activations through the layers
             for l in range(len(activations) - 1):
                 # To calculate the activations of the neurons in layer l+1 we take the following dot product and add the
@@ -92,23 +93,29 @@ if __name__ == '__main__':
             #       different matrices (e.g. delta[0] refers to the errors in h1, whereas activations[0] refers to the
             #       activations in the input layer)
 
+            # Calculate cost
+            cost = 0
+            for i in range(n_out):
+                cost += (activations[3][i] - y[i]) ** 2
+            cost /= 2
+
             # Calculate the error in the output layer
             for i in range(n_out):
-                delta[2][i] = (activations[3][i] - y[i]) * derivative_sigmoid(activations[3][i])
+                delta[2][i] = 2 * (activations[3][i] - y[i])
             # Propagate the error backwards
             for l in reversed(range(2)):
                 for k in range(len(weights[l + 1])):
                     error_sum = 0
                     for j in range(len(weights[l + 1][k])):
-                        error_sum += weights[l + 1][k][j] * delta[l + 1][j] * derivative_sigmoid(activations[l + 1][k])
+                        error_sum += weights[l + 1][k][j] * derivative_sigmoid(activations[l + 1][k]) * delta[l + 1][j]
                     delta[l][k] = error_sum
             # Update the weights and biases
             for l in reversed(range(len(weights))):
-                biases[l] -= delta[l]
+                # biases[l] -= delta[l]
                 for k in range(len(weights[l])):
                     for j in range(len(weights[l][k])):
                         # As noted before, the index l represents a different layer in each of the matrices
-                        weights[l][k][j] -= learning_rate * activations[l][k] * delta[l][j]
+                        weights[l][k][j] -= learning_rate * (activations[l][k] * derivative_sigmoid(activations[l + 1][j]) * delta[l][j])
 
             sys.stdout.flush()
 
@@ -119,8 +126,7 @@ if __name__ == '__main__':
     for testIndex in range(10000):
         sys.stdout.write("\rTesting {}/10000".format(testIndex + 1))
         # Add the input
-        for i in range(n_in):
-            activations[0][i] = test_x[testIndex][i]
+        activations[0] = test_x[testIndex]
         # Calculate the activations through the layers
         for l in range(len(activations) - 1):
             # To calculate the activations of the neurons in layer l+1 we take the following dot product and add the
