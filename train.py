@@ -20,7 +20,7 @@ def derivative_sigmoid(arr):
 
 
 if __name__ == '__main__':
-    (train_x, train_y), (test_x, testY) = mnist.load_data()
+    (train_x, train_y), (test_x, test_y) = mnist.load_data()
     # X contains the images, Y contains the corresponding number
 
     # Input layer consists of 784 neurons, one for each item in the matrices
@@ -132,7 +132,7 @@ if __name__ == '__main__':
 
         guess = np.argmax(activations[3])
 
-        if guess == testY[testIndex]:
+        if guess == test_y[testIndex]:
             correct += 1
 
         sys.stdout.flush()
