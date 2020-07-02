@@ -19,6 +19,20 @@ def derivative_sigmoid(arr):
     return arr * (1.0 - arr)
 
 
+# Relu activation function
+def relu(x):
+    if x > 0:
+        return x
+    return 0
+
+
+# Derivative of relu
+def derivative_relu(x):
+    if x > 0:
+        return 1
+    return 0
+
+
 if __name__ == '__main__':
     (train_x, train_y), (test_x, test_y) = mnist.load_data()
     # X contains the images, Y contains the corresponding number
@@ -59,12 +73,13 @@ if __name__ == '__main__':
     learning_rate = 0.1
     # float(input("Learning rate: "))
     cost = 0.0
+    cost_sum = 0.0
 
     # Iterate through the epochs
     for epoch in range(epochs):
         print("Epoch {}/{}:".format(epoch + 1, epochs))
         # Iterate through all training images
-        for train_index in range(6000):
+        for train_index in range(60000):
             sys.stdout.write("\rTraining {}/60000\t Cost: {:.5f}".format(train_index + 1, cost))
             # FORWARD PROPAGATION
             # Add the input
@@ -93,11 +108,12 @@ if __name__ == '__main__':
             #       different matrices (e.g. delta[0] refers to the errors in h1, whereas activations[0] refers to the
             #       activations in the input layer)
 
-            # Calculate cost
-            cost = 0
             for i in range(n_out):
-                cost += (activations[3][i] - y[i]) ** 2
-            cost /= 2
+                cost_sum += (activations[3][i] - y[i]) ** 2
+            # Calculate the average cost every 10 iterations
+            if train_index % 10 == 0:
+                cost = cost_sum / 20
+                cost_sum = 0
 
             # Calculate the error in the output layer
             for i in range(n_out):
