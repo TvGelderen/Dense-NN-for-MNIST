@@ -27,7 +27,7 @@ class DenseLayer:
         self.output = np.zeros(n_output)
 
     def forward(self, input):
-        self.output = self.biases
+        self.output = np.dot(input, self.weights) + self.biases
         if self.activation_function == "relu":
             self.output = tf.nn.relu(self.output)
         elif self.activation_function == "sigmoid":
