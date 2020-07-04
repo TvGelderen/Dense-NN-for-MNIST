@@ -1,5 +1,9 @@
-import numpy as np
 import tensorflow as tf
+import numpy as np
+
+# Used to stop a warning from tf about AVX2 usage
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 # Randomize the seed
 np.random.seed(seed=None)
@@ -28,12 +32,15 @@ class DenseLayer:
 
     def forward(self, input):
         self.output = np.dot(input, self.weights) + self.biases
+
         if self.activation_function == "relu":
             self.output = tf.nn.relu(self.output)
         elif self.activation_function == "sigmoid":
             self.output = tf.nn.sigmoid(self.output)
         else:
             print("Invalid activation function.")
+
+        return self.output
 
 
 (train_x, train_y), (test_x, test_y) = tf.keras.datasets.mnist.load_data()
@@ -47,6 +54,7 @@ train_x, test_x = train_x.transpose(0, 1, 2).reshape(-1, 784), test_x.transpose(
 model = Model()
 model.add(DenseLayer(784, 16))
 model.add(DenseLayer(16, 16))
+model.add(DenseLayer(16, 10))
 
 model.propagate_forward(train_x[0])
 
