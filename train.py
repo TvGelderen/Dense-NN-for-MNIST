@@ -1,6 +1,5 @@
 from tensorflow.python.keras.datasets import mnist
 import numpy as np
-import matplotlib.pyplot as plt
 from math import exp
 import sys
 
@@ -34,53 +33,53 @@ def derivative_relu(x):
 
 
 if __name__ == '__main__':
+    # x contains the images, y contains the corresponding number
     (train_x, train_y), (test_x, test_y) = mnist.load_data()
-    # X contains the images, Y contains the corresponding number
 
-    # Input layer consists of 784 neurons, one for each item in the matrices
-    n_in = 784
-    # The two hidden layers both contain 16 neurons
-    n_h1 = 16
-    n_h2 = 16
-    # The output layer contains 10 neurons, one for each possible number
-    n_out = 10
+    # Set the number of neurons in each of the layers
+    n_in, n_h1, n_h2, n_out = 784, 16, 16, 10
 
     # Randomize the seed
     np.random.seed(seed=None)
     # Initialize weights from a uniform distribution between -1.0 and 1.0
-    weights = [np.random.uniform(-1, 1, (n_in, n_h1)), np.random.uniform(-1, 1, (n_h1, n_h2)),
+    weights = [np.random.uniform(-1, 1, (n_in, n_h1)),
+               np.random.uniform(-1, 1, (n_h1, n_h2)),
                np.random.uniform(-1, 1, (n_h2, n_out))]
     # Initialize the matrix for the activation values
-    activations = [np.zeros(n_in), np.zeros(n_h1), np.zeros(n_h2), np.zeros(n_out)]
+    activations = [np.zeros(n_in),
+                   np.zeros(n_h1),
+                   np.zeros(n_h2),
+                   np.zeros(n_out)]
     # Initialize biases from a uniform distribution between -1.0 an 1.0
-    biases = [np.random.uniform(-1, 1, n_h1), np.random.uniform(-1, 1, n_h2), np.random.uniform(-1, 1, n_out)]
+    biases = [np.random.uniform(-1, 1, n_h1),
+              np.random.uniform(-1, 1, n_h2),
+              np.random.uniform(-1, 1, n_out)]
     # Initialize the error matrix, called delta
-    delta = [np.zeros(n_h1), np.zeros(n_h2), np.zeros(n_out)]
+    delta = [np.zeros(n_h1),
+             np.zeros(n_h2),
+             np.zeros(n_out)]
 
     # Change the type to float so as to make sure we get decimal values when normalizing
-    train_x = train_x.astype('float32')
-    test_x = test_x.astype('float32')
+    train_x, test_x = train_x.astype('float32'), test_x.astype('float32')
     # Normalizing by dividing by the max RGB value
-    train_x /= 255
-    test_x /= 255
+    train_x, test_x = train_x/255, test_x/255
     # Transpose the arrays so they can be input to the input nodes
-    train_x = train_x.transpose(0, 1, 2).reshape(-1, 784)
-    test_x = test_x.transpose(0, 1, 2).reshape(-1, 784)
+    train_x, test_x = train_x.transpose(0, 1, 2).reshape(-1, 784), test_x.transpose(0, 1, 2).reshape(-1, 784)
 
     # Determine number of epochs
     epochs = 1
-    # int(input("Number of epochs: "))
-    learning_rate = 0.1
-    # float(input("Learning rate: "))
+    learning_rate = 0.05
+    batch_size = 20
+    # epochs = int(input("Number of epochs: "))
+    # learning_rate = float(input("Learning rate: "))
     cost = 0.0
-    cost_sum = 0.0
 
     # Iterate through the epochs
     for epoch in range(epochs):
         print("Epoch {}/{}:".format(epoch + 1, epochs))
         # Iterate through all training images
         for train_index in range(60000):
-            sys.stdout.write("\rTraining {}/60000\t Cost: {:.5f}".format(train_index + 1, cost))
+            sys.stdout.write("\rTraining {}/60000\t Cost: {:.4f}".format(train_index + 1, cost))
             # FORWARD PROPAGATION
             # Add the input
             activations[0] = train_x[train_index]
@@ -108,12 +107,12 @@ if __name__ == '__main__':
             #       different matrices (e.g. delta[0] refers to the errors in h1, whereas activations[0] refers to the
             #       activations in the input layer)
 
-            for i in range(n_out):
-                cost_sum += (activations[3][i] - y[i]) ** 2
-            # Calculate the average cost every 10 iterations
-            if train_index % 10 == 0:
-                cost = cost_sum / 20
-                cost_sum = 0
+            # for i in range(n_out):
+            #     cost_sum += (activations[3][i] - y[i]) ** 2
+            # # Calculate the average cost every 10 iterations
+            # if train_index % 10 == 0:
+            #     cost = cost_sum / 20
+            #     cost_sum = 0
 
             # Calculate the error in the output layer
             for i in range(n_out):
