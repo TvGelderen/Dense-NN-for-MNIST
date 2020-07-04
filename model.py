@@ -19,7 +19,37 @@ class Model:
     def propagate_forward(self, input):
         for layer in self.layers:
             input = layer.forward(input)
-        print(input)
+        self.output = input
+
+    def propagate_back(self, error):
+        for layer in reversed(self.layers):
+            error = layer.back(error)
+
+    def fit(self, x, y, batch_size=15, epochs=1):
+        self.x, self.y, self.batch_size, self.epochs = x, y, batch_size, epochs
+        # for epoch in range(self.epochs):
+        #     for i in range(len(self.x)):
+        #         self.propagate_forward(self.x[:batch_size])
+        #         i += batch_size
+        self.propagate_forward(self.x[:self.batch_size])
+
+        self.y_hat = np.zeros((self.batch_size, self.output.shape[1]))
+        for i in range(self.batch_size):
+            for j in range(self.output.shape[1]):
+                if j == self.y[i]:
+                    self.y_hat[i][j] = 1.0
+                else:
+                    self.y_hat[i][j] = 0.0
+
+        errors = 2 * (self.y_hat - self.output)
+        error = np.zeros(self.output.shape[1])
+        for i in range(errors.shape[1]):
+            for j in range(batch_size):
+                error[i] += errors[j][i]
+        print(error)
+
+    def evaluate(self):
+        pass
 
 
 class DenseLayer:
@@ -42,20 +72,5 @@ class DenseLayer:
 
         return self.output
 
-
-(train_x, train_y), (test_x, test_y) = tf.keras.datasets.mnist.load_data()
-# Change the type to float so as to make sure we get decimal values when normalizing
-train_x, test_x = train_x.astype('float32'), test_x.astype('float32')
-# Normalizing by dividing by the max RGB value
-train_x, test_x = train_x/255, test_x/255
-# Transpose the arrays so they can be input to the input nodes
-train_x, test_x = train_x.transpose(0, 1, 2).reshape(-1, 784), test_x.transpose(0, 1, 2).reshape(-1, 784)
-
-model = Model()
-model.add(DenseLayer(784, 16))
-model.add(DenseLayer(16, 16))
-model.add(DenseLayer(16, 10))
-
-model.propagate_forward(train_x[0])
-
-print("End of file")
+    def back(self):
+        pass
