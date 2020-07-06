@@ -107,12 +107,12 @@ if __name__ == '__main__':
             #       different matrices (e.g. delta[0] refers to the errors in h1, whereas activations[0] refers to the
             #       activations in the input layer)
 
-            # for i in range(n_out):
-            #     cost_sum += (activations[3][i] - y[i]) ** 2
-            # # Calculate the average cost every 10 iterations
-            # if train_index % 10 == 0:
-            #     cost = cost_sum / 20
-            #     cost_sum = 0
+            for i in range(n_out):
+                cost_sum += (activations[3][i] - y[i]) ** 2
+            # Calculate the average cost every 10 iterations
+            if train_index % 10 == 0:
+                cost = cost_sum / 20
+                cost_sum = 0
 
             # Calculate the error in the output layer
             for i in range(n_out):
