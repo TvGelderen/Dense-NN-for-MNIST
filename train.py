@@ -4,32 +4,20 @@ from math import exp
 import sys
 
 
-# Sigmoid activation function
-def sigmoid(x):
-    # In some instances a too high activation can cause an OverflowError
-    try:
-        return 1 / (1 + exp(-x))
-    except OverflowError:
-        return 1
-
-
-# Derivative of the sigmoid
-def derivative_sigmoid(arr):
-    return arr * (1.0 - arr)
-
-
 # Relu activation function
-def relu(x):
+def relu(x, derivative=False):
     if x > 0:
+        if derivative:
+            return 1
         return x
     return 0
 
 
-# Derivative of relu
-def derivative_relu(x):
-    if x > 0:
-        return 1
-    return 0
+def softmax(arr):
+    total = np.sum(arr)
+    for idx in range(len(arr)):
+        arr[idx] /= total
+    return arr
 
 
 if __name__ == '__main__':
@@ -42,18 +30,18 @@ if __name__ == '__main__':
     # Randomize the seed
     np.random.seed(seed=None)
     # Initialize weights from a uniform distribution between -1.0 and 1.0
-    weights = [np.random.uniform(-1, 1, (n_in, n_h1)),
-               np.random.uniform(-1, 1, (n_h1, n_h2)),
-               np.random.uniform(-1, 1, (n_h2, n_out))]
+    weights = [np.random.uniform(-0.5, 0.5, (n_in, n_h1)),
+               np.random.uniform(-0.5, 0.5, (n_h1, n_h2)),
+               np.random.uniform(-0.5, 0.5, (n_h2, n_out))]
     # Initialize the matrix for the activation values
     activations = [np.zeros(n_in),
                    np.zeros(n_h1),
                    np.zeros(n_h2),
                    np.zeros(n_out)]
     # Initialize biases from a uniform distribution between -1.0 an 1.0
-    biases = [np.random.uniform(-1, 1, n_h1),
-              np.random.uniform(-1, 1, n_h2),
-              np.random.uniform(-1, 1, n_out)]
+    biases = [np.random.uniform(0, 1, n_h1),
+              np.random.uniform(0, 1, n_h2),
+              np.random.uniform(0, 1, n_out)]
     # Initialize the error matrix, called delta
     delta = [np.zeros(n_h1),
              np.zeros(n_h2),
@@ -72,7 +60,7 @@ if __name__ == '__main__':
     batch_size = 20
     # epochs = int(input("Number of epochs: "))
     # learning_rate = float(input("Learning rate: "))
-    cost = 0.0
+    cost, cost_sum = 0.0, 0.0
 
     # Iterate through the epochs
     for epoch in range(epochs):
@@ -88,9 +76,13 @@ if __name__ == '__main__':
                 # To calculate the activations of the neurons in layer l+1 we take the following dot product and add the
                 # respective bias
                 activations[l + 1] = activations[l].dot(weights[l]) + biases[l]
-                # Apply the sigmoid to get the final activation
+                # Apply the sigmoid to get the final activation, except for the last layer
                 for i in range(len(activations[l + 1])):
-                    activations[l + 1][i] = sigmoid(activations[l + 1][i])
+                    if l + 1 != len(activations):
+                        activations[l + 1][i] = relu(activations[l + 1][i])
+
+            # For the last layer we use softmax
+            activations[3] = softmax(activations[3])
 
             # Create an expected output vector
             y = np.zeros(n_out)
@@ -122,7 +114,7 @@ if __name__ == '__main__':
                 for k in range(len(weights[l + 1])):
                     error_sum = 0
                     for j in range(len(weights[l + 1][k])):
-                        error_sum += weights[l + 1][k][j] * derivative_sigmoid(activations[l + 1][k]) * delta[l + 1][j]
+                        error_sum += weights[l + 1][k][j] * relu(activations[l + 1][k], True) * delta[l + 1][j]
                     delta[l][k] = error_sum
             # Update the weights and biases
             for l in reversed(range(len(weights))):
@@ -130,7 +122,7 @@ if __name__ == '__main__':
                 for k in range(len(weights[l])):
                     for j in range(len(weights[l][k])):
                         # As noted before, the index l represents a different layer in each of the matrices
-                        weights[l][k][j] -= learning_rate * (activations[l][k] * derivative_sigmoid(activations[l + 1][j]) * delta[l][j])
+                        weights[l][k][j] -= learning_rate * (activations[l][k] * relu(activations[l + 1][j], True) * delta[l][j])
 
             sys.stdout.flush()
 
@@ -149,7 +141,7 @@ if __name__ == '__main__':
             activations[l + 1] = activations[l].dot(weights[l]) + biases[l]
             # Apply the sigmoid to get the final activation
             for i in range(len(activations[l + 1])):
-                activations[l + 1][i] = sigmoid(activations[l + 1][i])
+                activations[l + 1][i] = relu(activations[l + 1][i])
 
         guess = np.argmax(activations[3])
 
