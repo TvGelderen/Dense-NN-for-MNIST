@@ -29,19 +29,19 @@ if __name__ == '__main__':
 
     # Randomize the seed
     np.random.seed(seed=None)
-    # Initialize weights from a uniform distribution between -1.0 and 1.0
-    weights = [np.random.uniform(-0.5, 0.5, (n_in, n_h1)),
-               np.random.uniform(-0.5, 0.5, (n_h1, n_h2)),
-               np.random.uniform(-0.5, 0.5, (n_h2, n_out))]
+    # Initialize weights from a uniform distribution between -0.25 and 0.25
+    weights = [np.random.uniform(-0.25, 0.25, (n_in, n_h1)),
+               np.random.uniform(-0.25, 0.25, (n_h1, n_h2)),
+               np.random.uniform(-0.25, 0.25, (n_h2, n_out))]
     # Initialize the matrix for the activation values
     activations = [np.zeros(n_in),
                    np.zeros(n_h1),
                    np.zeros(n_h2),
                    np.zeros(n_out)]
-    # Initialize biases from a uniform distribution between -1.0 an 1.0
-    biases = [np.random.uniform(0, 1, n_h1),
-              np.random.uniform(0, 1, n_h2),
-              np.random.uniform(0, 1, n_out)]
+    # Initialize biases from a uniform distribution between -0.25 an 0.25
+    biases = [np.random.uniform(-0.25, 0.25, n_h1),
+              np.random.uniform(-0.25, 0.25, n_h2),
+              np.random.uniform(-0.25, 0.25, n_out)]
     # Initialize the error matrix, called delta
     delta = [np.zeros(n_h1),
              np.zeros(n_h2),
@@ -114,7 +114,7 @@ if __name__ == '__main__':
                 for k in range(len(weights[l + 1])):
                     error_sum = 0
                     for j in range(len(weights[l + 1][k])):
-                        error_sum += weights[l + 1][k][j] * relu(activations[l + 1][k], True) * delta[l + 1][j]
+                        error_sum += weights[l + 1][k][j] * delta[l + 1][j] * relu(activations[l + 1][k], True)
                     delta[l][k] = error_sum
             # Update the weights and biases
             for l in reversed(range(len(weights))):
@@ -122,7 +122,7 @@ if __name__ == '__main__':
                 for k in range(len(weights[l])):
                     for j in range(len(weights[l][k])):
                         # As noted before, the index l represents a different layer in each of the matrices
-                        weights[l][k][j] -= learning_rate * (activations[l][k] * relu(activations[l + 1][j], True) * delta[l][j])
+                        weights[l][k][j] -= learning_rate * (activations[l][k] * delta[l][j])
 
             sys.stdout.flush()
 
